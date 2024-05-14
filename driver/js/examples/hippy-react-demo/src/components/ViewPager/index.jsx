@@ -147,7 +147,7 @@ export default class Test extends React.Component {
             this.viewpager = ref;
           }}
           style={styles.container}
-          initialPage={selectedIndex}
+          initialPage={0}
           keyboardDismissMode="none"
           scrollEnabled
           onPageSelected={this.onPageSelected}
