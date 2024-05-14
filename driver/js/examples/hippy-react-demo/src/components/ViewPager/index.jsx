@@ -104,7 +104,7 @@ export default class Test extends React.Component {
 
     this.setState({
       beforeList: [...moreBeforeList, ...beforeList],
-      selectedIndex: selectedIndex + moreBeforeList.length,
+      // selectedIndex: selectedIndex + moreBeforeList.length,
     });
   }
 
@@ -147,9 +147,7 @@ export default class Test extends React.Component {
             this.viewpager = ref;
           }}
           style={styles.container}
-          {/* 可以为下面，但是更新后没有触发onPageSelected */}
-          {/* initialPage={selectedIndex}  */}
-          initialPage={0}
+          initialPage={selectedIndex}
           keyboardDismissMode="none"
           scrollEnabled
           onPageSelected={this.onPageSelected}
