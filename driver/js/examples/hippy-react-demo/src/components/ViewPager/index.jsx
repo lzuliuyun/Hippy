@@ -1,14 +1,7 @@
 import React from 'react';
-import {
-  StyleSheet,
-  View,
-  Text,
-  ViewPager,
-} from '@hippy/react';
-import { CirclePagerView, SquarePagerView, TrianglePagerView } from '../../shared/PagerItemView';
+import { StyleSheet, View, Text, ViewPager } from '@hippy/react';
 
 const DEFAULT_DOT_RADIUS = 6;
-const PAGE_COUNT = 3;
 
 const styles = StyleSheet.create({
   dotContainer: {
@@ -56,81 +49,126 @@ const styles = StyleSheet.create({
   },
 });
 
-export default class PagerExample extends React.Component {
-    state = {
-      selectedIndex: 0,
-    };
+export default class Test extends React.Component {
+  middleList = Array(5)
+    .fill(0)
+    .map((item, index) => (
+      <View key={index}>
+        <Text> middle索引{index}</Text>
+      </View>
+    ));
 
-    constructor(props) {
-      super(props);
-      this.onPageSelected = this.onPageSelected.bind(this);
-      this.onPageScrollStateChanged = this.onPageScrollStateChanged.bind(this);
-    }
+  state = {
+    selectedIndex: 0,
+    beforeList: [],
+    afterList: [],
+  };
 
-    onPageSelected(pageData) {
-      console.log('onPageSelected', pageData.position);
-      this.setState({
-        selectedIndex: pageData.position,
-      });
-    }
+  constructor(props) {
+    super(props);
+    this.onPageSelected = this.onPageSelected.bind(this);
+    this.onPageScrollStateChanged = this.onPageScrollStateChanged.bind(this);
+    this.updateBeforeList = this.updateBeforeList.bind(this);
+    this.updateAfterList = this.updateAfterList.bind(this);
+  }
 
-    onPageScrollStateChanged(pageScrollState) {
-      console.log('onPageScrollStateChanged', pageScrollState);
-    }
+  componentDidUpdate() {
+    // this.viewpager.setPage(this.state.selectedIndex);
+  }
 
-    onPageScroll({ offset, position }) {
-      console.log('onPageScroll', offset, position);
-    }
-    render() {
-      const { selectedIndex } = this.state;
-      return (
-        <View style={{ flex: 1, backgroundColor: '#ffffff' }}>
-          <View style={styles.buttonContainer}>
-            <View
-              style={styles.button}
-              onClick={() => {
-                this.viewpager.setPage(2);
-              }}
-            >
-              <Text style={styles.buttonText}>动效滑到第3页</Text>
-            </View>
-            <View style={styles.button} onClick={() => this.viewpager.setPageWithoutAnimation(0)}>
-              <Text style={styles.buttonText}>直接滑到第1页</Text>
-            </View>
+  onPageSelected(pageData) {
+    console.log('viewpager:onPageSelected', pageData.position);
+    this.setState({
+      selectedIndex: pageData.position,
+    });
+  }
+
+  onPageScrollStateChanged(pageScrollState) {
+    console.log('viewpager:onPageScrollStateChanged', pageScrollState);
+  }
+
+  onPageScroll({ offset, position }) {
+    console.log('viewpager-onPageScroll', offset, position);
+  }
+
+  updateBeforeList() {
+    const { beforeList, selectedIndex } = this.state;
+    const startIndex = -(beforeList.length + 5);
+    const moreBeforeList = Array(5)
+      .fill(0)
+      .map((item, index) => (
+        <View key={startIndex + index}>
+          <Text> before索引:{startIndex + index}</Text>
+        </View>
+      ));
+
+    this.setState({
+      beforeList: [...moreBeforeList, ...beforeList],
+      selectedIndex: selectedIndex + moreBeforeList.length,
+    });
+  }
+
+  updateAfterList() {
+    const { afterList } = this.state;
+    const startIndex = afterList.length + 5;
+    const moreAfterList = Array(5)
+      .fill(0)
+      .map((item, index) => (
+        <View key={startIndex + index}>
+          <Text> after索引:{startIndex + index}</Text>
+        </View>
+      ));
+
+    this.setState({
+      afterList: [...moreAfterList, ...afterList],
+    });
+  }
+
+  render() {
+    const { selectedIndex, beforeList, afterList } = this.state;
+
+    const newChildList = [...beforeList, ...this.middleList, ...afterList];
+
+    return (
+      <View style={{ flex: 1, backgroundColor: '#ffffff', marginTop: 50 }}>
+        <View style={styles.buttonContainer}>
+          <View style={styles.button} onClick={this.updateBeforeList}>
+            <Text style={styles.buttonText}>前面新增5个</Text>
           </View>
-          <ViewPager
-            ref={(ref) => {
-              this.viewpager = ref;
-            }}
-            style={styles.container}
-            initialPage={0}
-            keyboardDismissMode="none"
-            scrollEnabled
-            onPageSelected={this.onPageSelected}
-            onPageScrollStateChanged={this.onPageScrollStateChanged}
-            onPageScroll={this.onPageScroll}
-          >
-            {
-              [
-                SquarePagerView('squarePager'),
-                TrianglePagerView('TrianglePager'),
-                CirclePagerView('CirclePager'),
-              ]
-            }
-          </ViewPager>
-          <View style={styles.dotContainer}>
-            {
-              new Array(PAGE_COUNT).fill(0)
-                .map((n, i) => {
-                  const isSelect = i === selectedIndex;
-                  return (
-                  // eslint-disable-next-line react/jsx-key
-                  <View style={[styles.dot, isSelect ? styles.selectDot : null]} key={`dot_${i}`}/>
-                  );
-                })
-            }
+          <View style={styles.button} onClick={this.updateAfterList}>
+            <Text style={styles.buttonText}>后面新增5个</Text>
+          </View>
+          <View style={styles.button}>
+            <Text style={styles.buttonText}>当前索引 {selectedIndex}</Text>
           </View>
         </View>
-      );
-    }
+        <ViewPager
+          ref={(ref) => {
+            this.viewpager = ref;
+          }}
+          style={styles.container}
+          {/* 可以为下面，但是更新后没有触发onPageSelected */}
+          {/* initialPage={selectedIndex}  */}
+          initialPage={0}
+          keyboardDismissMode="none"
+          scrollEnabled
+          onPageSelected={this.onPageSelected}
+          onPageScrollStateChanged={this.onPageScrollStateChanged}
+          onPageScroll={this.onPageScroll}
+        >
+          {newChildList}
+        </ViewPager>
+        <View style={styles.dotContainer}>
+          {new Array(newChildList.length).fill(0)
+            .map((n, i) => {
+              const isSelect = i === selectedIndex;
+              return (
+              // eslint-disable-next-line react/jsx-key
+              <View style={[styles.dot, isSelect ? styles.selectDot : null]} key={`dot_${i}`} />
+              );
+            })}
+        </View>
+      </View>
+    );
+  }
 }
