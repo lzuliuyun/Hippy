@@ -70,6 +70,9 @@ export default class Test extends React.Component {
     this.onPageScrollStateChanged = this.onPageScrollStateChanged.bind(this);
     this.updateBeforeList = this.updateBeforeList.bind(this);
     this.updateAfterList = this.updateAfterList.bind(this);
+    this.deleteBeginList = this.deleteBeginList.bind(this);
+    this.deleteAfterList = this.deleteAfterList.bind(this);
+    this.onTouchEnd = this.onTouchEnd.bind(this);
   }
 
   componentDidUpdate() {
@@ -91,6 +94,10 @@ export default class Test extends React.Component {
     console.log('viewpager-onPageScroll', offset, position);
   }
 
+  onTouchEnd(e) {
+    console.log('viewpager:onTouchEnd', e);
+  }
+
   updateBeforeList() {
     const { beforeList, selectedIndex } = this.state;
     const startIndex = -(beforeList.length + 5);
@@ -106,6 +113,48 @@ export default class Test extends React.Component {
       beforeList: [...moreBeforeList, ...beforeList],
       // selectedIndex: selectedIndex + moreBeforeList.length,
     });
+  }
+
+  deleteBeginList() {
+    const { beforeList, middleList, afterList } = this.state;
+    beforeList.shift();
+
+    this.setState({
+      beforeList: [...beforeList],
+    });
+
+    if (beforeList.length === 0) {
+      this.middleList.shift();
+    }
+
+    if (this.middleList.length === 0) {
+      afterList.shift();
+
+      this.setState({
+        afterList: [...afterList],
+      });
+    }
+  }
+
+  deleteAfterList() {
+    const { beforeList, middleList, afterList } = this.state;
+    afterList.shift();
+
+    this.setState({
+      afterList: [...afterList],
+    });
+
+    if (afterList.length === 0) {
+      this.middleList.shift();
+    }
+
+    if (this.middleList.length === 0) {
+      beforeList.shift();
+
+      this.setState({
+        beforeList: [...beforeList],
+      });
+    }
   }
 
   updateAfterList() {
@@ -133,11 +182,19 @@ export default class Test extends React.Component {
       <View style={{ flex: 1, backgroundColor: '#ffffff', marginTop: 50 }}>
         <View style={styles.buttonContainer}>
           <View style={styles.button} onClick={this.updateBeforeList}>
-            <Text style={styles.buttonText}>前面新增5个</Text>
+            <Text style={styles.buttonText}>前面+5</Text>
           </View>
           <View style={styles.button} onClick={this.updateAfterList}>
-            <Text style={styles.buttonText}>后面新增5个</Text>
+            <Text style={styles.buttonText}>后面+5</Text>
           </View>
+          <View style={styles.button} onClick={this.deleteBeginList}>
+            <Text style={styles.buttonText}>前删-1</Text>
+          </View>
+          <View style={styles.button} onClick={this.deleteAfterList}>
+            <Text style={styles.buttonText}>后删-1</Text>
+          </View>
+        </View>
+        <View style={styles.buttonContainer}>
           <View style={styles.button}>
             <Text style={styles.buttonText}>当前索引 {selectedIndex}</Text>
           </View>
@@ -154,17 +211,20 @@ export default class Test extends React.Component {
           onPageScrollStateChanged={this.onPageScrollStateChanged}
           onPageScroll={this.onPageScroll}
         >
-          {newChildList}
+          {newChildList.map((item) => (
+            <View key={item.key} style={{ backgroundColor: 'red', height: 300 }} onTouchEnd={this.onTouchEnd}>
+              {item}
+            </View>
+          ))}
         </ViewPager>
         <View style={styles.dotContainer}>
-          {new Array(newChildList.length).fill(0)
-            .map((n, i) => {
-              const isSelect = i === selectedIndex;
-              return (
+          {new Array(newChildList.length).fill(0).map((n, i) => {
+            const isSelect = i === selectedIndex;
+            return (
               // eslint-disable-next-line react/jsx-key
               <View style={[styles.dot, isSelect ? styles.selectDot : null]} key={`dot_${i}`} />
-              );
-            })}
+            );
+          })}
         </View>
       </View>
     );
